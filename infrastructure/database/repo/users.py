@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
-from infrastructure.database.models import User, Profile, Group
+from infrastructure.database.models import User, Profile
 from infrastructure.database.repo.base import BaseRepo
 
 
@@ -94,15 +94,6 @@ class UserRepo(BaseRepo):
             return False
         return True
 
-    async def get_user_groups(self, user_id: int):
-        profile = await self.session.execute(select(Profile).where(Profile.user_id == user_id))
-        profile_scalar: Profile = profile.scalar()
-        if profile_scalar is None:
-            return False
-        groups = await self.session.execute(select(Group).where(Group.user_id == user_id))
-        groups_scalar = groups.scalars().all()
-        return groups_scalar
-
     async def set_language(self, user_id: int, language: str):
         profile = await self.session.execute(select(Profile).where(Profile.user_id == user_id))
         profile_scalar: Profile = profile.scalar()
@@ -112,3 +103,45 @@ class UserRepo(BaseRepo):
         await self.session.commit()
         return True
 
+    async def add_gender(self, user_id: int, gender: bool):
+        profile = await self.session.execute(select(Profile).where(Profile.user_id == user_id))
+        profile_scalar: Profile = profile.scalar()
+        if profile_scalar is None:
+            return False
+        profile_scalar.gender = gender
+        await self.session.commit()
+        return True
+
+    async def add_age(self, user_id: int, age: int):
+        profile = await self.session.execute(select(Profile).where(Profile.user_id == user_id))
+        profile_scalar: Profile = profile.scalar()
+        if profile_scalar is None:
+            return False
+        profile_scalar.age = age
+        await self.session.commit()
+        return True
+
+    async def add_nickname(self, user_id: int, nickname: str):
+        profile = await self.session.execute(select(Profile).where(Profile.user_id == user_id))
+        profile_scalar: Profile = profile.scalar()
+        if profile_scalar is None:
+            return False
+        profile_scalar.nickname = nickname
+        await self.session.commit()
+        return True
+
+    async def get_gender(self, user_id: int):
+        profile = await self.session.execute(select(Profile).where(Profile.user_id == user_id))
+        profile_scalar: Profile = profile.scalar()
+        if profile_scalar is None:
+            return False
+        return Profile.gender
+
+    async def captcha_done(self, user_id: int):
+        profile = await self.session.execute(select(Profile).where(Profile.user_id == user_id))
+        profile_scalar: Profile = profile.scalar()
+        if profile_scalar is None:
+            return False
+        profile_scalar.captcha = True
+        await self.session.commit()
+        return True

@@ -5,15 +5,19 @@ import betterlogging as bl
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
-
 from aiogram_dialog import setup_dialogs
+
+from motor.motor_asyncio import AsyncIOMotorClient
 
 from tgbot.config import load_config, Config
 from tgbot.handlers import routers_list
 from tgbot.middlewares.config import ConfigMiddleware
 from tgbot.middlewares.database import DatabaseMiddleware
+from tgbot.middlewares.check_user import CheckUser
 from tgbot.services import broadcaster
-from tgbot.dialogs.profile.selected.commands import profile_router
+
+from tgbot.dialogs.captcha.selected.commands import captcha_router
+from tgbot.dialogs.captcha import captcha_dialogs
 from tgbot.dialogs.profile import profile_dialogs
 
 from infrastructure.database.setup import create_engine, create_metadata, create_session_pool
@@ -37,6 +41,7 @@ def register_global_middlewares(dp: Dispatcher, config: Config, session_pool=Non
     middleware_types = [
         ConfigMiddleware(config),
         DatabaseMiddleware(session_pool),
+        CheckUser()
     ]
 
     for middleware_type in middleware_types:
@@ -106,14 +111,17 @@ async def main():
     async with engine.begin() as conn:
         await conn.run_sync(create_metadata())
 
-    dp.include_routers(profile_router, *profile_dialogs())
+    cluster = AsyncIOMotorClient(config.misc.mongodb_url)
+    db = cluster.anonimdb
+
+    dp.include_routers(captcha_router, *captcha_dialogs(), *profile_dialogs())
     setup_dialogs(dp)
     dp.include_routers(*routers_list)
 
     register_global_middlewares(dp, config, db_pool)
 
     await on_startup(bot, config.tg_bot.admin_ids)
-    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types(), mdb=db)
 
 
 if __name__ == "__main__":

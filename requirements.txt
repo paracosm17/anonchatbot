@@ -1,9 +1,9 @@
-aiogram
-environs
+aiogram~=3.4.1
+environs~=9.5.0
 redis
-betterlogging
+betterlogging~=0.2.1
 aiosqlite
-sqlalchemy
+sqlalchemy~=2.0.27
 
 # # For enabling api:
 # backoff
@@ -14,3 +14,8 @@ sqlalchemy
 # sqlalchemy~=2.0
 # alembic~=1.0
 # asyncpg
+
+motor~=3.3.2
+typing_extensions~=4.9.0
+aiohttp~=3.9.3
+yarl~=1.9.4

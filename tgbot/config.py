@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
+import environs
 from environs import Env
 
 
@@ -136,19 +137,12 @@ class RedisConfig:
 
 @dataclass
 class Miscellaneous:
-    """
-    Miscellaneous configuration class.
+    mongodb_url: str
 
-    This class holds settings for various other parameters.
-    It merely serves as a placeholder for settings that are not part of other categories.
-
-    Attributes
-    ----------
-    other_params : str, optional
-        A string used to hold other various parameters as required (default is None).
-    """
-
-    other_params: str = None
+    @staticmethod
+    def from_env(env: Env):
+        mongodb_url = env.str("MONGODB_URL")
+        return Miscellaneous(mongodb_url=mongodb_url)
 
 
 @dataclass
@@ -193,5 +187,5 @@ def load_config(path: str = None) -> Config:
         tg_bot=TgBot.from_env(env),
         db=DbConfig(),
         # redis=RedisConfig.from_env(env),
-        misc=Miscellaneous(),
+        misc=Miscellaneous.from_env(env),
     )

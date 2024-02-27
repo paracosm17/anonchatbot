@@ -6,7 +6,6 @@ from aiogram.types import Message
 
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.models.users import User, Profile
-from infrastructure.database.repo.groups import GroupRepo
 
 
 class DatabaseMiddleware(BaseMiddleware):
